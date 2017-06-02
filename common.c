@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <limits.h>
 #include "common.h"
 
 void str2Hex(char *in, char *out)
@@ -71,6 +73,9 @@ int strScore(char *in)
 	int len = 0;
 
 	while((cur = *input++)) {
+		if (!isspace(cur) && !isgraph(cur)) {
+			return INT_MAX;
+		}		
 		if (('a' <= cur) && (cur <= 'z')) {
 			++count[cur - 'a'];
 			++len;
@@ -82,7 +87,7 @@ int strScore(char *in)
 	}
 	
 	if (0 == len)
-		return ((unsigned int)-1) >> 1;
+		return INT_MAX;
 
 	for (i = 0; i < 26; ++i) {
 		count[i] *= 10000;
