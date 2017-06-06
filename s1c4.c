@@ -1,38 +1,45 @@
 #include <stdio.h>
 #include <limits.h>
-#include <memory.h>
+#include <malloc.h>
+#include <string.h>
 
-#if 1
-int main(int argc, char** argv)
+char* singleXor(char *in, char key);
+char* singleXorDetect(char *in, char *key, int *score);
+
+// the code here is just for s1c4
+char* s1c4Result(void)
 {
+    char buffer[512] = {0};    
     FILE *fp = fopen("4.txt", "r");
-    char line[512] = {0}, result[512] = {0};
-    int nLine = 0, minLine = 0;
-    int minByte = 0, minScore = INT_MAX;
 
-    while (fgets(line, 512, fp)) {
-        int i = 0, curScore = 0;
-        for (i = 0; i < 128; ++i) {
-            memset(result, 0, 512);
-            singleXor(line, i, result);
-            curScore = strScore(result);
-            if (curScore < minScore) {
-                minLine = nLine;
-                minByte = i;
-                minScore = curScore;
-            }
+    char *result = NULL;
+    int line = 0, resLine = 0;
+    char key = 0, resKey = 0;
+    int score = 0, minScore = INT_MAX;
+
+    for (line = 0; fgets(buffer, 512, fp); ++line) {
+        if ('\n' == buffer[strlen(buffer) - 1])
+           buffer[strlen(buffer) - 1] = 0; // get rid of '\n'
+        
+        result = singleXorDetect(buffer, &key, &score);
+        
+        if (score < minScore) {
+            minScore = score;
+            resLine = line;
+            resKey = key;
         }
-        ++nLine;
+
+        free(result);
     }
 
-    rewind(fp);
-    for (nLine = 0; nLine <=minLine; ++nLine)
-        fgets(line, 512, fp);
+    for (rewind(fp), line = 0; fgets(buffer, 512, fp) && (line < resLine); ++line);
+    
+    if ('\n' == buffer[strlen(buffer) - 1])
+        buffer[strlen(buffer) - 1] = 0; // get rid of '\n'
+    
+    result = singleXor(buffer, resKey);
 
-    memset(result, 0, 512);
-    singleXor(line, minByte, result);
-    puts(result);
+    fclose(fp);
 
-    return 0;
+    return result;
 }
-#endif

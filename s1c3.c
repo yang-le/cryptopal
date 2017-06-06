@@ -1,58 +1,131 @@
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <limits.h>
 #include "common.h"
 
-void singleXorImp(char *in, char byte, char *out, size_t size)
+char* convHexRaw(char *hex, size_t *outSize);
+
+void singleXorSimple(char *in, char key, char *out, size_t size)
 {
 	int i = 0;
 	for (i = 0; i < size; ++i) {
-		out[i] = in[i] ^ byte;
+		out[i] = in[i] ^ key;
 	}
 }
 
-void singleXor(char *in, char byte, char *out)
+char* singleXor(char *in, char key)
 {
-	size_t size = (strlen(in) + 1) / 2;
-	char *hex = (char*)malloc(size);
+	char *_in = NULL, *_out = NULL;
+	size_t size = 0;
 
-	str2Hex(in, hex);
+	_in = convHexRaw(in, &size);
+	_out = (char *)calloc(size, 1);
 
-	singleXorImp(hex, byte, out, size);
+	singleXorSimple(_in, key, _out, size);
+	
+	free(_in);
 
-	free(hex);
+	return _out;
 }
 
-#if 0
-struct entry {
-	int key;
-	int score;
-	char *result;
-} table[128];
+// the freq of 'a' - 'z' (/10000)
+static int freqs[26] = {
+	817,
+	149,
+	278,
+	425,
+	1270,
+	223,
+	202,
+	609,
+	697,
+	15,
+	77,
+	403,
+	240,
+	675,
+	750,
+	193,
+	10,
+	599,
+	633,
+	906,
+	276,
+	98,
+	236,
+	15,
+	197,
+	7,
+};
 
-static char result[128][512] = {0};
-
-int main(int argc, char** argv)
+int strScore(char *in)
 {
-	int i = 0, j = 0;
+	int i = 0;
+	int count[26] = {0};
+	int score = 0;
+	int len = 0;
+	char cur = '\0';
 
-	for (i = 0; i < 128; ++i) {
-		singleXor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", i, result[i]);
-		table[i].key = i;
-		table[i].score = strScore(result[i]);
-		table[i].result = result[i];
-	}
-
-	for (i = 0; i < 128; ++i) {
-		for (j = i + 1; j < 128; ++j) {
-			if (table[i].score > table[j].score) {
-				struct entry temp = table[i];
-				table[i] = table[j];
-				table[j] = temp;
-			}
+	while((cur = *in++)) {
+		if (!isspace(cur) && !isgraph(cur)) {
+			return INT_MAX;
+		}		
+		if (('a' <= cur) && (cur <= 'z')) {
+			++count[cur - 'a'];
+			++len;
+		}
+		if (('A' <= cur) && (cur <= 'Z')) {
+			++count[cur - 'A'];
+			++len;
 		}
 	}
+	
+	if (0 == len)
+		return INT_MAX;
 
-	return 0;
+	for (i = 0; i < 26; ++i) {
+		count[i] *= 10000;
+		count[i] /= len;
+		score += (count[i] - freqs[i]) * (count[i] - freqs[i]);
+	}
+
+	return score;
 }
-#endif
+
+static struct entry {
+	char key;
+	int score;
+	char *result;
+} table[CHAR_MAX];
+
+static int tableCompare(const void *a, const void *b) {
+	return ((struct entry *)a)->score - ((struct entry *)b)->score;
+}
+
+char* singleXorDetect(char *in, char *key, int *score)
+{
+	int k = 0;
+	for (k = 0; k < CHAR_MAX; ++k) {
+		table[k].key = k;
+		table[k].result = singleXor(in, k);
+		table[k].score = strScore(table[k].result);
+	}
+
+	// TODO: we don't need sort, just to find the max
+	qsort(table, CHAR_MAX, sizeof(table[0]), tableCompare);
+
+	for (k = 1; k < CHAR_MAX; ++k) {
+		free(table[k].result);
+	}
+
+	if (key) {
+		*key = table[0].key;
+	}
+
+	if (score) {
+		*score = table[0].score;
+	}
+
+	return table[0].result;
+}

@@ -1,8 +1,32 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "common.h"
 
-void fixedXorImp(char *in1, char *in2, char *out, size_t size)
+char* convHexRaw(char *hex, size_t *outSize);
+
+void convRawHexSimple(char *in, size_t size, char *out)
+{
+	static const char hexTbl[] = "0123456789abcdef";	
+	
+	int i = 0;
+	for (i = 0; i < size; ++i) {
+		*out++ = hexTbl[(unsigned)*in >> 4];
+		*out++ = hexTbl[(unsigned)*in++ & 0xF];
+	}
+}
+
+char* convRawHex(char *in, size_t size)
+{
+	char *out = (char *)calloc(size * 2, 1);
+
+	convRawHexSimple(in, size, out);
+
+	return out;
+}
+
+void fixedXorSimple(char *in1, char *in2, char *out, size_t size)
 {
 	int i = 0;
 	for (i = 0; i < size; ++i) {
@@ -10,28 +34,22 @@ void fixedXorImp(char *in1, char *in2, char *out, size_t size)
 	}
 }
 
-void fixedXor(char *in1, char *in2, char *out)
+char* fixedXorHex(char *in1, char *in2)
 {
-	size_t size = (strlen(in1) + 1) / 2;
-	char *hex1 = (char*)malloc(size);
-	char *hex2 = (char*)malloc(size);
+	size_t size = 0;	
+	char *out = NULL;
+	char *_in1 = convHexRaw(in1, &size);
+	char *_in2 = convHexRaw(in2, &size);
+	char *_out = (char *)calloc(size, 1);
 
-	str2Hex(in1, hex1);
-	str2Hex(in2, hex2);
+	assert((strlen(in1) == strlen(in2)) && "Input of xor must be equal sized.");
 
-	fixedXorImp(hex1, hex2, out, size);
+	fixedXorSimple(_in1, _in2, _out, size);
+	out = convRawHex(_out, size);
+	
+	free(_in1);
+	free(_in2);
+	free(_out);
 
-	free(hex1);
-	free(hex2);
+	return out;
 }
-
-#if 0
-int main(int argc, char** argv)
-{
-	char out[1024] = {'\0'};
-
-	fixedXor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965", out);
-
-	return 0;
-}
-#endif
