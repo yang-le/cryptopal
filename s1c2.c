@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "common.h"
 
 char* convHexRaw(char *hex, size_t *outSize);
 
@@ -35,7 +34,7 @@ void fixedXorSimple(char *in1, char *in2, char *out, size_t size)
 char* fixedXorHex(char *in1, char *in2)
 {
 	assert((strlen(in1) == strlen(in2)) && "Input of xor must be equal sized.");
-		
+
 	size_t size = 0;	
 	char *out = NULL;
 	char *_in1 = convHexRaw(in1, &size);

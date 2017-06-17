@@ -1,23 +1,3 @@
-#include <ctype.h>
-#include <limits.h>
-#include <assert.h>
-#include <stdlib.h>
-#include "common.h"
-
-void hex2Str(char *in, char *out)
-{
-
-}
-
-void str2Hex(char *in, char *out)
-{
-	char cur = 0;
-	while((cur = *in++)) {
-		sprintf(out, "%02x", cur);
-		out += 2;
-	}
-}
-
 int strDistance(char *a, char *b)
 {
 	int distance = 0;

@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <limits.h>
 #include <string.h>
-#include "common.h"
 
 static void convBase64RawImp(char in[4], char out[3])
 {
@@ -90,6 +89,7 @@ static int tableCompare(const void *a, const void *b) {
 	return ((struct entry *)a)->distance - ((struct entry *)b)->distance;
 }
 
+int strScore(char *in);
 char* singleXorDetect(char *in, size_t size, char *key, int *score);
 void repeatXorSimple(char *in, char *key, char *out, size_t size);
 

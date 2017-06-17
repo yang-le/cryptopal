@@ -2,7 +2,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#include "common.h"
 
 char* convHexRaw(char *hex, size_t *outSize);
 
