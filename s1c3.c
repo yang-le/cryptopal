@@ -14,18 +14,23 @@ void singleXorSimple(char *in, char key, char *out, size_t size)
 	}
 }
 
-char* singleXor(char *in, char key)
+char* singleXor(char *in, char key, size_t size)
 {
-	char *_in = NULL, *_out = NULL;
+	char *out = (char *)calloc(size, 1);
+
+	singleXorSimple(in, key, out, size);
+
+	return out;
+}
+
+char* singleXorHex(char *in, char key)
+{
 	size_t size = 0;
 
-	_in = convHexRaw(in, &size);
-	_out = (char *)calloc(size, 1);
-
-	singleXorSimple(_in, key, _out, size);
+	char *_in = convHexRaw(in, &size);
+	char *_out = singleXor(_in, key, size);
 	
 	free(_in);
-
 	return _out;
 }
 
@@ -103,12 +108,12 @@ static int tableCompare(const void *a, const void *b) {
 	return ((struct entry *)a)->score - ((struct entry *)b)->score;
 }
 
-char* singleXorDetect(char *in, char *key, int *score)
+char* singleXorDetect(char *in, size_t size, char *key, int *score)
 {
 	int k = 0;
 	for (k = 0; k < CHAR_MAX; ++k) {
 		table[k].key = k;
-		table[k].result = singleXor(in, k);
+		table[k].result = singleXor(in, k, size);
 		table[k].score = strScore(table[k].result);
 	}
 
@@ -128,4 +133,15 @@ char* singleXorDetect(char *in, char *key, int *score)
 	}
 
 	return table[0].result;
+}
+
+char* singleXorDetectHex(char *in, char *key, int *score)
+{
+	size_t size = 0;
+	
+	char *_in = convHexRaw(in, &size);
+	char *_out = singleXorDetect(_in, size, key, score);
+
+	free(_in);
+	return _out;
 }

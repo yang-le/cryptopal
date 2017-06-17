@@ -5,10 +5,10 @@
 
 char* convHexBase64(char *hexStr);
 char* fixedXorHex(char *in1, char *in2);
-char* singleXorDetect(char *in, char *key, int *score);
+char* singleXorDetectHex(char *in, char *key, int *score);
 char* s1c4Result(void);
 char* repeatXorHex(char *in, char *key);
-char* convBase64Raw(char *in, size_t *size);
+char* s1c6Result(void);
 
 int main(int argc, char **argv)
 {
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     free(result);
 
     // s1c3
-    result = singleXorDetect("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", NULL, NULL);
+    result = singleXorDetectHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", NULL, NULL);
     
     // TODO: this assertion failed
     //assert(0 == strcmp(result, "Cooking MC's like a pound of bacon"));
@@ -50,9 +50,7 @@ int main(int argc, char **argv)
     free(result);
 
     // s1c6
-    result = convBase64Raw("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t", NULL);
-
-    free(result);
+    s1c6Result();
 
     return 0;
 }

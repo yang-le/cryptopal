@@ -37,20 +37,3 @@ int strDistance(char *a, char *b)
 
 	return distance;
 }
-
-int hammingDistance(char *a, char *b, int len)
-{
-	int distance = 0;
-
-	while (len--) {
-		int sum = 0;
-		unsigned char t = *a++ ^ *b++;
-		while (t) {
-			sum += t & 1;
-			t >>= 1;
-		}
-		distance += sum;
-	}
-
-	return distance;
-}

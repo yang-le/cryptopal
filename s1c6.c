@@ -63,61 +63,90 @@ char* convBase64Raw(char *in, size_t *size)
 	return out;
 }
 
-#if 0
-int main(int argc, char** argv)
+int hammingDistance(char *a, char *b, int len)
+{
+	int distance = 0;
+
+	while (len--) {
+		int sum = 0;
+		unsigned char t = *a++ ^ *b++;
+		while (t) {
+			sum += t & 1;
+			t >>= 1;
+		}
+		distance += sum;
+	}
+
+	return distance;
+}
+
+#define MAX_KEY_LEN 40
+
+struct entry {
+	int keyLen;
+	float distance;
+} table[MAX_KEY_LEN] = {{0, 0}};
+
+static int tableCompare(const void *a, const void *b) {
+	return ((struct entry *)a)->distance - ((struct entry *)b)->distance;
+}
+
+char* singleXorDetect(char *in, size_t size, char *key, int *score);
+void repeatXorSimple(char *in, char *key, char *out, size_t size);
+
+char* s1c6Result(void)
 {
     FILE *fp = fopen("6.txt", "r");
-	char in[512] = {0};
-	char out[512] = {0};
-	char blocks[512] = {0};
-	char blocksOut[512] = {0};
-	char result[512] = {0};
-	int outLen = 0;
-	int keyLen = 0;
-	int blockLen = 0;
-	int maxKeyLen = 0;
-	int minKeyLen = 0;
-	int minDistance = INT_MAX;
-	int minScore = INT_MAX;
-	char minKey[64] = {0};
-	int i = 0, j = 0;
 
-	fgets(in, 512, fp);
-	deBase64(in, out);
+	size_t size = 0;
+	char *file = NULL;
+	char *raw = NULL;
+	size_t rawLen = 0;
+	int tryKeyLen = 0;
+	int i = 0;
 	
-	outLen = strlen(in) / 4 * 3;
-	maxKeyLen = outLen / 2;
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	rewind(fp);
 
-	for (keyLen = 2; keyLen < maxKeyLen; ++keyLen) {
-		int distance = hammingDistance(out, out + keyLen, keyLen) / keyLen;
-		
-		if (distance < minDistance) {
-			minDistance = distance;
-			minKeyLen = keyLen;
-		}
-	}
+	file = (char *)calloc(size + 1, 1);
+	fgets(file, size, fp);
 
-	blockLen = outLen / minKeyLen + 1;
-	for (i = 0; i < outLen; ++i) {
-		blocks[(i % minKeyLen) * blockLen + i / minKeyLen] = out[i];
-	}
-
-	for (i = 0; i < minKeyLen; ++i) {
-		minScore = INT_MAX;
-		memset(blocksOut, 0, 512);
-		for (j = 0; j < 128; ++j) {
-			singleXorImp(blocks + i * blockLen, j, blocksOut, blockLen);
-			int score = strScore(blocksOut);
-			if (score < minScore) {
-				minScore = score;
-				minKey[i] = j;
-			}
-		}
-	}
-
-	repeatXorImp(out, minKey, result, outLen);
-	
+	while(fgets(file + strlen(file) - 1, size - strlen(file), fp));
 	fclose(fp);
-    return 0;
+
+	file[strlen(file) - 1] = 0;
+
+	raw = convBase64Raw(file, &rawLen);
+
+	assert(37 == hammingDistance("this is a test", "wokka wokka!!!", sizeof("this is a test")));
+
+	for (tryKeyLen = 2; tryKeyLen < MAX_KEY_LEN; ++tryKeyLen) {
+		table[tryKeyLen].keyLen = tryKeyLen;
+		table[tryKeyLen].distance = 1.0f * hammingDistance(raw, raw + tryKeyLen, tryKeyLen) / tryKeyLen;
+	}
+
+	qsort(table, MAX_KEY_LEN, sizeof(table[0]), tableCompare);
+
+	for (i = 2; i < MAX_KEY_LEN; ++i) {
+		int j = 0;
+		int keySize = table[i].keyLen;
+		int blockSize = rawLen / keySize + 1;
+		char **blocks = (char **)calloc(sizeof(char *), keySize);
+		char *key = (char *)calloc(keySize + 1, 1);
+		char *out = (char *)calloc(rawLen + 1, 1);
+		for (j = 0; j < keySize; ++j) {
+			int k = 0, curPos = 0;
+			blocks[j] = (char *)calloc(blockSize, 1);
+			for (k = 0, curPos = j; (k < blockSize) && (curPos < rawLen); ++k, curPos += keySize) {
+				blocks[j][k] = raw[curPos];
+			}
+			singleXorDetect(blocks[j], blockSize, &key[j], NULL);
+		}
+
+		repeatXorSimple(raw, key, out, rawLen);
+		free(out);
+	}
+
+    return NULL;
 }
-#endif
