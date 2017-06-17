@@ -13,7 +13,7 @@ char* s1c4Result(void)
 
     char key = 0, resKey = 0;
     char *result = NULL, *resLine = NULL;
-    int line = 0, score = 0, minScore = INT_MAX;
+    int score = 0, minScore = INT_MAX;
 
     size_t size = 0;
     char *file = NULL;
@@ -27,7 +27,7 @@ char* s1c4Result(void)
     fread(file, size, 1, fp);
     fclose(fp);
 
-    for (line = 0; (buffer = strtok((0 == line) ? file : NULL, "\n")); ++line) {
+    for (int line = 0; (buffer = strtok((0 == line) ? file : NULL, "\n")); ++line) {
         free(singleXorDetectHex(buffer, &key, &score));
         
         if (score < minScore) {

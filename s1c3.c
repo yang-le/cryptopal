@@ -8,8 +8,7 @@ char* convHexRaw(char *hex, size_t *outSize);
 
 void singleXorSimple(char *in, char key, char *out, size_t size)
 {
-	int i = 0;
-	for (i = 0; i < size; ++i) {
+	for (int i = 0; i < size; ++i) {
 		out[i] = in[i] ^ key;
 	}
 }
@@ -66,7 +65,6 @@ static int freqs[26] = {
 
 int strScore(char *in)
 {
-	int i = 0;
 	int count[26] = {0};
 	int score = 0;
 	int len = 0;
@@ -89,7 +87,7 @@ int strScore(char *in)
 	if (0 == len)
 		return INT_MAX;
 
-	for (i = 0; i < 26; ++i) {
+	for (int i = 0; i < 26; ++i) {
 		count[i] *= 10000;
 		count[i] /= len;
 		score += (count[i] - freqs[i]) * (count[i] - freqs[i]);
@@ -110,8 +108,7 @@ static int tableCompare(const void *a, const void *b) {
 
 char* singleXorDetect(char *in, size_t size, char *key, int *score)
 {
-	int k = 0;
-	for (k = 0; k < CHAR_MAX; ++k) {
+	for (int k = 0; k < CHAR_MAX; ++k) {
 		table[k].key = k;
 		table[k].result = singleXor(in, k, size);
 		table[k].score = strScore(table[k].result);
@@ -120,7 +117,7 @@ char* singleXorDetect(char *in, size_t size, char *key, int *score)
 	// TODO: we don't need sort, just to find the max
 	qsort(table, CHAR_MAX, sizeof(table[0]), tableCompare);
 
-	for (k = 1; k < CHAR_MAX; ++k) {
+	for (int k = 1; k < CHAR_MAX; ++k) {
 		free(table[k].result);
 	}
 

@@ -15,7 +15,6 @@ static void convRawBase64Imp(char in[3], char out[4])
 void convRawBase64Simple(char *in, size_t inSize, char *out)
 {
 	int i = 0;
-	int remain = 0;
 	int count = inSize / 3;
 
 	for (i = 0; i < count; ++i)
@@ -23,7 +22,7 @@ void convRawBase64Simple(char *in, size_t inSize, char *out)
 		convRawBase64Imp(in + 3 * i, out + 4 * i);
 	}
 
-	remain = inSize - 3 * i;
+	int remain = inSize - 3 * i;
 	if (remain == 2) {
 		char _in[3] = {in[3 * i], in[3 * i + 1], '\0'};
 		convRawBase64Imp(_in, out + 4 * i);
@@ -71,10 +70,9 @@ void convHexRawSimple(char *in, char *out)
 char* convHexRaw(char *hex, size_t *outSize)
 {
 	size_t hexSize = strlen(hex);	
-	char *bytes = (char *)calloc(hexSize / 2, 1);
-	
 	assert((0 == hexSize % 2) && "The length of hex string must be even.");
 
+	char *bytes = (char *)calloc(hexSize / 2, 1);
 	convHexRawSimple(hex, bytes);
 
 	if (outSize) {

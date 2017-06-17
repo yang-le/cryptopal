@@ -8,9 +8,8 @@ char* convRawHex(char *in, size_t size);
 
 void repeatXorSimple(char *in, char *key, char *out, size_t size)
 {
-	int i = 0;
     size_t keyLen = strlen(key);
-	for (i = 0; i < size; ++i) {
+	for (int i = 0; i < size; ++i) {
 		out[i] = in[i] ^ key[i % keyLen];
 	}
 }

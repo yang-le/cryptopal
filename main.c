@@ -50,7 +50,11 @@ int main(int argc, char **argv)
     free(result);
 
     // s1c6
-    s1c6Result();
+    result = s1c6Result();
 
+    assert(0 == strcmp(result, "Terminator X: Bring the noise"));
+
+    free(result);
+    
     return 0;
 }

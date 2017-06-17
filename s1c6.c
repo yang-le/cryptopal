@@ -50,10 +50,9 @@ void convBase64RawSimple(char *in, char *out)
 char* convBase64Raw(char *in, size_t *size)
 {
 	size_t _size = strlen(in) / 4 * 3;
-	char *out = (char *)calloc(_size, 1);
-
 	assert((0 == strlen(in) % 4) && "The length of base64 string must be divided by 4.");
 
+	char *out = (char *)calloc(_size, 1);
 	convBase64RawSimple(in, out);
 
 	if (size) {
@@ -102,8 +101,6 @@ char* s1c6Result(void)
 	char *file = NULL;
 	char *raw = NULL;
 	size_t rawLen = 0;
-	int tryKeyLen = 0;
-	int i = 0;
 	
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp);
@@ -119,34 +116,51 @@ char* s1c6Result(void)
 
 	raw = convBase64Raw(file, &rawLen);
 
+// seems no means{
 	assert(37 == hammingDistance("this is a test", "wokka wokka!!!", sizeof("this is a test")));
 
-	for (tryKeyLen = 2; tryKeyLen < MAX_KEY_LEN; ++tryKeyLen) {
+	for (int tryKeyLen = 2; tryKeyLen < MAX_KEY_LEN; ++tryKeyLen) {
 		table[tryKeyLen].keyLen = tryKeyLen;
 		table[tryKeyLen].distance = 1.0f * hammingDistance(raw, raw + tryKeyLen, tryKeyLen) / tryKeyLen;
 	}
 
 	qsort(table, MAX_KEY_LEN, sizeof(table[0]), tableCompare);
+// }seems no means
 
-	for (i = 2; i < MAX_KEY_LEN; ++i) {
-		int j = 0;
-		int keySize = table[i].keyLen;
+	char key1[MAX_KEY_LEN] = {0};
+	char key2[MAX_KEY_LEN] = {0};
+	int score = 0, minScore = INT_MAX;
+
+	char *key = key1;
+	char *out = (char *)calloc(rawLen + 1, 1);	
+	char *blocks = (char *)calloc(rawLen + MAX_KEY_LEN, 1);	
+	
+	for (int keySize = 2; keySize < MAX_KEY_LEN; ++keySize) {
 		int blockSize = rawLen / keySize + 1;
-		char **blocks = (char **)calloc(sizeof(char *), keySize);
-		char *key = (char *)calloc(keySize + 1, 1);
-		char *out = (char *)calloc(rawLen + 1, 1);
-		for (j = 0; j < keySize; ++j) {
-			int k = 0, curPos = 0;
-			blocks[j] = (char *)calloc(blockSize, 1);
-			for (k = 0, curPos = j; (k < blockSize) && (curPos < rawLen); ++k, curPos += keySize) {
-				blocks[j][k] = raw[curPos];
+
+		for (int j = 0; j < keySize; ++j) {
+			for (int k = 0, curPos = j; (k < blockSize) && (curPos < rawLen); ++k, curPos += keySize) {
+				blocks[j * blockSize + k] = raw[curPos];
 			}
-			singleXorDetect(blocks[j], blockSize, &key[j], NULL);
+			singleXorDetect(&blocks[j * blockSize], blockSize, &key[j], &score);
 		}
 
+		memset(blocks, 0, rawLen + MAX_KEY_LEN);
+		
 		repeatXorSimple(raw, key, out, rawLen);
-		free(out);
+		score = strScore(out);
+		if (score < minScore) {
+			minScore = score;
+			key = (key == key1) ? key2 : key1;
+		}
 	}
 
-    return NULL;
+	free(out);
+	free(blocks);
+
+	key = (key == key1) ? key2 : key1;
+	char *result = (char *)calloc(strlen(key) + 1, 1);
+	strcpy(result, key);
+
+	return result;
 }
