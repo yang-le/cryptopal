@@ -93,7 +93,7 @@ int strScore(char *in);
 char* singleXorDetect(char *in, size_t size, char *key, int *score);
 void repeatXorSimple(char *in, char *key, char *out, size_t size);
 
-char* s1c6Result(void)
+char* s1c6Result(char **pKey)
 {
     FILE *fp = fopen("6.txt", "r");
 
@@ -115,6 +115,7 @@ char* s1c6Result(void)
 	file[strlen(file) - 1] = 0;
 
 	raw = convBase64Raw(file, &rawLen);
+	free(file);
 
 // seems no means{
 	assert(37 == hammingDistance("this is a test", "wokka wokka!!!", sizeof("this is a test")));
@@ -155,12 +156,15 @@ char* s1c6Result(void)
 		}
 	}
 
-	free(out);
 	free(blocks);
 
 	key = (key == key1) ? key2 : key1;
-	char *result = (char *)calloc(strlen(key) + 1, 1);
-	strcpy(result, key);
+	repeatXorSimple(raw, key, out, rawLen);
+	
+	if (pKey) {
+		*pKey = (char *)calloc(strlen(key) + 1, 1);
+		strcpy(*pKey, key);
+	}
 
-	return result;
+	return out;
 }

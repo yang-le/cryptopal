@@ -8,7 +8,7 @@ char* fixedXorHex(char *in1, char *in2);
 char* singleXorDetectHex(char *in, char *key, int *score);
 char* s1c4Result(void);
 char* repeatXorHex(char *in, char *key);
-char* s1c6Result(void);
+char* s1c6Result(char **pKey);
 
 int main(int argc, char **argv)
 {
@@ -50,11 +50,14 @@ int main(int argc, char **argv)
     free(result);
 
     // s1c6
-    result = s1c6Result();
+    char *key = NULL;
+    result = s1c6Result(&key);
 
-    assert(0 == strcmp(result, "Terminator X: Bring the noise"));
-
-    free(result);
+    assert(0 == strcmp(key, "Terminator X: Bring the noise"));
+    puts(result);
     
+    free(key);
+    free(result);
+
     return 0;
 }
