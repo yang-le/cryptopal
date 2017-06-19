@@ -9,6 +9,7 @@ char* singleXorDetectHex(char *in, char *key, int *score);
 char* s1c4Result(void);
 char* repeatXorHex(char *in, char *key);
 char* s1c6Result(char **pKey);
+char* s1c7Result(void);
 
 int main(int argc, char **argv)
 {
@@ -58,6 +59,11 @@ int main(int argc, char **argv)
     
     free(key);
     free(result);
+
+    // s1c7
+    result = s1c7Result();
+    puts(result);
+    free(result);   
 
     return 0;
 }

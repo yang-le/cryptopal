@@ -48,14 +48,20 @@ void convBase64RawSimple(char *in, char *out)
 
 char* convBase64Raw(char *in, size_t *size)
 {
-	size_t _size = strlen(in) / 4 * 3;
 	assert((0 == strlen(in) % 4) && "The length of base64 string must be divided by 4.");
-
+	
+	size_t _size = strlen(in) / 4 * 3;
 	char *out = (char *)calloc(_size, 1);
+	
 	convBase64RawSimple(in, out);
 
 	if (size) {
-		*size = _size;
+		if ('=' == in[strlen(in) - 2])
+			*size = _size - 2;
+		else if ('=' == in[strlen(in) - 1])
+			*size = _size - 1;
+		else
+			*size = _size;
 	}
 
 	return out;
@@ -160,6 +166,7 @@ char* s1c6Result(char **pKey)
 
 	key = (key == key1) ? key2 : key1;
 	repeatXorSimple(raw, key, out, rawLen);
+	free(raw);
 	
 	if (pKey) {
 		*pKey = (char *)calloc(strlen(key) + 1, 1);
