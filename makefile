@@ -1,6 +1,6 @@
 all: cryptopal
 
-cryptopal: s1c1.o s1c2.o s1c3.o s1c4.o s1c5.o s1c6.o s1c7.o main.o
+cryptopal: s1c1.o s1c2.o s1c3.o s1c4.o s1c5.o s1c6.o s1c7.o s1c8.o main.o
 	clang++ -Wall -Werror $^ -lcrypto -o $@
 
 %.o : %.c
