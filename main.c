@@ -11,6 +11,8 @@ char* repeatXorHex(char *in, char *key);
 char* s1c6Result(char **pKey);
 char* s1c7Result(void);
 int s1c8Result(void);
+char* pkcs7Padding(size_t blockSize, char *in , size_t inSize, size_t *outSize);
+char* s2c10Result(void);
 
 int main(int argc, char **argv)
 {
@@ -66,6 +68,16 @@ int main(int argc, char **argv)
         d403180c98c8f6db1f2a3f9c4040deb0
         ab51b29933f2c123c58386b06fba186a
     */
+
+    // s2c9
+    result = pkcs7Padding(20, "YELLOW SUBMARINE", strlen("YELLOW SUBMARINE"), NULL);
+    assert(0 == strcmp("YELLOW SUBMARINE\x04\x04\x04\x04", result));
+    free(result);
+
+    // s2c10
+    result = s2c10Result();
+    puts(result);
+    free(result);
 
     return 0;
 }

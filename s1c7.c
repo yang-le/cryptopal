@@ -5,6 +5,21 @@
 
 char* convBase64Raw(char *in, size_t *size);
 
+void aesEcbSimple(char *key, size_t keyBits, char *in, char *out, size_t size, int enc)
+{
+    AES_KEY aes_dec_ctx;
+    AES_set_decrypt_key((unsigned char *)key, keyBits, &aes_dec_ctx);
+    for (int i = 0, keyBytes = keyBits / 8; i < size; i += keyBytes)
+        AES_ecb_encrypt((unsigned char *)in + i, (unsigned char *)out + i, &aes_dec_ctx, enc);	
+}
+
+char* aesEcb(char *key, size_t keyBits, char *in, size_t size, int enc)
+{
+	char *out = (char *)calloc(size + 1, 1);
+	aesEcbSimple(key, keyBits, in, out, size, enc);
+	return out;
+}
+
 char* s1c7Result(void)
 {
     FILE *fp = fopen("7.txt", "r");
@@ -29,12 +44,8 @@ char* s1c7Result(void)
 	raw = convBase64Raw(file, &rawLen);
 	free(file);
 
-    char *out = (char *)calloc(rawLen + 1, 1);
-    AES_KEY aes_dec_ctx;
-    AES_set_decrypt_key((unsigned char *)"YELLOW SUBMARINE", 128, &aes_dec_ctx);
-    for (int i = 0; i < rawLen; i += 16)
-        AES_ecb_encrypt((unsigned char *)raw + i, (unsigned char *)out + i, &aes_dec_ctx, AES_DECRYPT);
-    free(raw);
+    char *out = aesEcb("YELLOW SUBMARINE", 128, raw, rawLen, 0);
 
+    free(raw);
     return out;
 }
